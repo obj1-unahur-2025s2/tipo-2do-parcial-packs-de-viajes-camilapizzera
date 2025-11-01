@@ -1,1 +1,56 @@
-// completar
+import packs.*
+
+describe "test" {
+    const property vip = new BeneficioEspecial(tipo = "vip", costo= 10, estaVigente = false)
+    const property sinFila = new BeneficioEspecial(tipo = "vip", costo= 5, estaVigente = true)
+    const property trasladoPrivado = new BeneficioEspecial(tipo = "traslado", costo= 10, estaVigente = true)
+    const property seguro = new BeneficioEspecial(tipo = "seguro", costo= 5, estaVigente = true)
+
+    const property coordinadorCalificado = new Coordinador(cantidadViajesRealizados = 30, estaMotivado = true, aniosExperiencia = 10) 
+    
+    const property nacionalSinBeneficioVigente = new PackNacional(duracion = 10, precioBase = 100, beneficiosEspeciales = [vip],
+                                                              coordinador = coordinadorCalificado, provinciaDestino = "Cordoba", actividadesIncluidas = [])
+    const property nacionalConDosBeneficios = new PackNacional(duracion = 10, precioBase = 100, beneficiosEspeciales = [trasladoPrivado, seguro],
+                                                                coordinador = coordinadorCalificado, provinciaDestino = "Tucuman", actividadesIncluidas = [])
+    const property internacionalSinBeneficioVigente = new PackInternacional(duracion = 10, precioBase = 1000, beneficiosEspeciales = [vip],
+                                                                coordinador = coordinadorCalificado, paisDestino = "Cuba", cantidadDeEscalas= 0, esLugarDeInteres = true) 
+
+    test "Un pack nacional sin beneficios vigentes devuelve el mismo precio base." {
+        assert.equals(100, nacionalSinBeneficioVigente.valorFinal())
+    }
+    test "Un pack nacional con 2 beneficios vigentes suma correctamente sus costos al precio base" {
+        assert.equals(115, nacionalConDosBeneficios.valorFinal())
+    }
+    test "Un pack internacional sin beneficios vigentes calcula correctamente el total con el 20% de recargo." {
+        assert.equals(1200, internacionalSinBeneficioVigente.valorFinal())
+    }
+    test "Un guía motivado con 21 viajes realizados es considerado altamente calificado." {
+        const guia = new Guia(cantidadViajesRealizados = 21, estaMotivado = true, aniosExperiencia = 10) 
+        assert.that(guia.esAltamenteCalificado())
+    }
+    test "Un asistente logístico con menos de 3 años de experiencia no es calificado, aunque tenga muchos viajes." {
+        const asistenteLogistico = new AsistenteLogistico(cantidadViajesRealizados = 21, estaMotivado = true, aniosExperiencia = 2) 
+        assert.notThat(asistenteLogistico.esAltamenteCalificado())
+    }
+    test "Un acompañante con cualquier cantidad de viajes es siempre calificado si supera los 20" {
+        const acompaniante = new Acompaniante(cantidadViajesRealizados = 50, estaMotivado = true, aniosExperiencia = 1) 
+        assert.that(acompaniante.esAltamenteCalificado())
+    }
+    test "Un pack nacional con mas de 10 dias de duracion y un coordinador altamente calificado es premium" {
+        const nacional = new PackNacional(duracion = 11, precioBase = 100, beneficiosEspeciales = [vip],
+                            coordinador = coordinadorCalificado, provinciaDestino = "Cordoba", actividadesIncluidas = [])
+        assert.that(nacional.esPackPremium())
+    }
+    test "Un Pack nacional en un lugar de interes, de 20 dias de duracion, sin escalas es premium" {
+        const internacional = new PackInternacional(duracion = 21, precioBase= 25, beneficiosEspeciales = [], 
+                                coordinador = coordinadorCalificado, paisDestino = "Uruguay", cantidadDeEscalas = 0, esLugarDeInteres = true)
+        assert.that(internacional.esPackPremium())
+    }
+    test "un pack provincial con con un precio de 80, 5 actividades, 10 ciudades a visitar y con 3 beneficios vigentes es primium y tiene un costo total de 105" {
+        const provincial = new PackProvincial(duracion = 11, precioBase = 80, beneficiosEspeciales = [seguro, trasladoPrivado, sinFila],
+            coordinador = coordinadorCalificado, provinciaDestino = "Cordoba", actividadesIncluidas = ["paseoPorElRio", "fiesta", "cena", "desayuno", "escalada"], cantidadCiudadesAVisitar = 10)
+        assert.that(provincial.esPackPremium())0
+        assert.equals(105, provincial.valorFinal())
+    }
+
+}
